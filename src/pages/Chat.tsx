@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { sendChatMessage } from '@/lib/chatApi';
+import { formatMessage } from '@/lib/messageFormatter';
 import { Navbar } from '@/components/Navbar';
 import { ChatWindow } from '@/components/ChatWindow';
 import { Message } from '@/components/MessageBubble';
@@ -68,6 +69,7 @@ export default function Chat() {
       const botMessages: Message[] = replies.map((reply) => ({
         id: crypto.randomUUID(),
         content: reply,
+        formatted: formatMessage(reply),
         role: 'bot',
         timestamp: new Date(),
       }));

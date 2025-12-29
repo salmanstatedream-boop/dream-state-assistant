@@ -6,6 +6,12 @@ export interface Message {
   content: string;
   role: 'user' | 'bot';
   timestamp: Date;
+  formatted?: FormattedContent[];
+}
+
+export interface FormattedContent {
+  type: 'text' | 'bold' | 'italic' | 'code' | 'codeblock';
+  content: string;
 }
 
 interface MessageBubbleProps {
@@ -14,6 +20,50 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+
+  const renderContent = () => {
+    if (message.formatted) {
+      return (
+        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+          {message.formatted.map((item, idx) => {
+            switch (item.type) {
+              case 'bold':
+                return <strong key={idx}>{item.content}</strong>;
+              case 'italic':
+                return <em key={idx}>{item.content}</em>;
+              case 'code':
+                return (
+                  <code
+                    key={idx}
+                    className={cn(
+                      'px-2 py-0.5 rounded text-xs font-mono',
+                      isUser ? 'bg-primary-foreground/20' : 'bg-muted'
+                    )}
+                  >
+                    {item.content}
+                  </code>
+                );
+              case 'codeblock':
+                return (
+                  <pre
+                    key={idx}
+                    className={cn(
+                      'rounded p-2 text-xs font-mono mt-2 mb-2 overflow-x-auto',
+                      isUser ? 'bg-primary-foreground/10' : 'bg-muted'
+                    )}
+                  >
+                    <code>{item.content}</code>
+                  </pre>
+                );
+              default:
+                return <span key={idx}>{item.content}</span>;
+            }
+          })}
+        </p>
+      );
+    }
+    return <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>;
+  };
 
   return (
     <div
@@ -24,16 +74,16 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     >
       <div
         className={cn(
-          'max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm',
+          'max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg rounded-2xl px-4 py-3 shadow-sm',
           isUser
             ? 'bg-primary text-primary-foreground rounded-br-md'
             : 'bg-card border border-border rounded-bl-md'
         )}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        {renderContent()}
         <p
           className={cn(
-            'text-[10px] mt-1.5',
+            'text-xs mt-1.5 font-medium',
             isUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
           )}
         >

@@ -28,17 +28,17 @@ export default function Auth() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <header className="p-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-background/95">
+      <header className="px-4 py-4 sm:px-6">
+        <Button variant="ghost" size="sm" asChild className="font-medium">
+          <Link to="/" className="text-sm sm:text-base">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            Back Home
           </Link>
         </Button>
       </header>
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lg p-2">
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md bg-card/60 backdrop-blur border border-border/50 rounded-2xl shadow-2xl overflow-hidden">
           <AuthForm onSuccess={() => navigate('/chat')} />
         </div>
       </main>
