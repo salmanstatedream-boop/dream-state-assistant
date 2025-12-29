@@ -120,14 +120,6 @@ const FormFields = ({
     </Button>
   </form>
 );
-      </div>
-    </div>
-    <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {buttonText}
-    </Button>
-  </form>
-);
 
 export function AuthForm({ onSuccess }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
