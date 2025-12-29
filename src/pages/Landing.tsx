@@ -14,12 +14,12 @@ export default function Landing() {
           <span className="font-semibold text-foreground">Dream State</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link to="/auth">Sign In</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/auth?tab=signup">Create Account</Link>
-          </Button>
+          <Link to="/auth">
+            <Button variant="ghost">Sign In</Button>
+          </Link>
+          <Link to="/auth?tab=signup">
+            <Button>Create Account</Button>
+          </Link>
         </div>
       </header>
 
@@ -35,12 +35,12 @@ export default function Landing() {
             Instant answers for guests, owners, and operations. Get help with check-ins, property details, payouts, and maintenance — all in one place.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
-              <Link to="/auth?tab=signup">Get Started</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/auth">Sign In</Link>
-            </Button>
+            <Link to="/auth?tab=signup">
+              <Button size="lg">Get Started</Button>
+            </Link>
+            <Link to="/auth">
+              <Button size="lg" variant="outline">Sign In</Button>
+            </Link>
           </div>
         </div>
 
