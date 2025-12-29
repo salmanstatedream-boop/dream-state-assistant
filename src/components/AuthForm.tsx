@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Loader2, MessageSquare } from 'lucide-react';
+import { Eye, EyeOff, Loader2, MessageSquare, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,39 @@ interface FormFieldsProps {
   showPassword: boolean;
   setShowPassword: (show: boolean) => void;
   isLoading: boolean;
+  isSignUp?: boolean;
 }
+
+// Password strength validation helper
+const getPasswordStrength = (password: string) => {
+  return {
+    minLength: password.length >= 12,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+  };
+};
+
+const PasswordRequirements = ({ password }: { password: string }) => {
+  const strength = getPasswordStrength(password);
+  return (
+    <div className="mt-2 space-y-1 text-xs">
+      <RequirementItem met={strength.minLength} text="At least 12 characters" />
+      <RequirementItem met={strength.hasUppercase} text="One uppercase letter" />
+      <RequirementItem met={strength.hasLowercase} text="One lowercase letter" />
+      <RequirementItem met={strength.hasNumber} text="One number" />
+      <RequirementItem met={strength.hasSpecial} text="One special character" />
+    </div>
+  );
+};
+
+const RequirementItem = ({ met, text }: { met: boolean; text: string }) => (
+  <div className={`flex items-center gap-2 ${met ? 'text-green-600' : 'text-muted-foreground'}`}>
+    {met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+    {text}
+  </div>
+);
 
 const FormFields = ({
   onSubmit,
@@ -33,6 +65,7 @@ const FormFields = ({
   showPassword,
   setShowPassword,
   isLoading,
+  isSignUp = false,
 }: FormFieldsProps) => (
   <form onSubmit={onSubmit} className="space-y-4">
     <div className="space-y-2">
@@ -79,6 +112,15 @@ const FormFields = ({
           )}
         </Button>
       </div>
+      {isSignUp && password && <PasswordRequirements password={password} />}
+    </div>
+    <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
+      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {buttonText}
+    </Button>
+  </form>
+);
+      </div>
     </div>
     <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -99,14 +141,42 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       toast({ title: 'Email required', description: 'Please enter your email address.', variant: 'destructive' });
       return false;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // RFC 5322 simplified email validation
+    if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(email)) {
       toast({ title: 'Invalid email', description: 'Please enter a valid email address.', variant: 'destructive' });
       return false;
     }
-    if (password.length < 6) {
-      toast({ title: 'Password too short', description: 'Password must be at least 6 characters.', variant: 'destructive' });
+    
+    // Strong password validation: minimum 12 characters with complexity requirements
+    if (password.length < 12) {
+      toast({ title: 'Password too short', description: 'Password must be at least 12 characters.', variant: 'destructive' });
       return false;
     }
+    
+    // Require at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      toast({ title: 'Weak password', description: 'Password must contain at least one uppercase letter.', variant: 'destructive' });
+      return false;
+    }
+    
+    // Require at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      toast({ title: 'Weak password', description: 'Password must contain at least one lowercase letter.', variant: 'destructive' });
+      return false;
+    }
+    
+    // Require at least one number
+    if (!/\d/.test(password)) {
+      toast({ title: 'Weak password', description: 'Password must contain at least one number.', variant: 'destructive' });
+      return false;
+    }
+    
+    // Require at least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      toast({ title: 'Weak password', description: 'Password must contain at least one special character (!@#$%^&* etc).', variant: 'destructive' });
+      return false;
+    }
+    
     return true;
   };
 
@@ -186,6 +256,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             isLoading={isLoading}
+            isSignUp={false}
           />
         </TabsContent>
         <TabsContent value="signup" key="signup">
@@ -199,6 +270,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             isLoading={isLoading}
+            isSignUp={true}
           />
         </TabsContent>
       </Tabs>

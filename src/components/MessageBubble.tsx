@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import DOMPurify from 'dompurify';
 
 export interface Message {
   id: string;
@@ -21,16 +22,22 @@ interface MessageBubbleProps {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
+  // Sanitize content to prevent XSS attacks
+  const sanitizeContent = (content: string): string => {
+    return DOMPurify.sanitize(content, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+  };
+
   const renderContent = () => {
     if (message.formatted) {
       return (
         <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
           {message.formatted.map((item, idx) => {
+            const sanitized = sanitizeContent(item.content);
             switch (item.type) {
               case 'bold':
-                return <strong key={idx}>{item.content}</strong>;
+                return <strong key={idx}>{sanitized}</strong>;
               case 'italic':
-                return <em key={idx}>{item.content}</em>;
+                return <em key={idx}>{sanitized}</em>;
               case 'code':
                 return (
                   <code
@@ -40,7 +47,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                       isUser ? 'bg-primary-foreground/20' : 'bg-muted'
                     )}
                   >
-                    {item.content}
+                    {sanitized}
                   </code>
                 );
               case 'codeblock':
@@ -52,17 +59,18 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                       isUser ? 'bg-primary-foreground/10' : 'bg-muted'
                     )}
                   >
-                    <code>{item.content}</code>
+                    <code>{sanitized}</code>
                   </pre>
                 );
               default:
-                return <span key={idx}>{item.content}</span>;
+                return <span key={idx}>{sanitized}</span>;
             }
           })}
         </p>
       );
     }
-    return <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>;
+    // Sanitize plain text content as well
+    return <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{sanitizeContent(message.content)}</p>;
   };
 
   return (

@@ -159,6 +159,11 @@ export default function Chat() {
         setConversationTitle(newTitle);
       }
     } catch (error) {
+      // Log error only in development
+      if (import.meta.env.DEV) {
+        console.error('Chat API error:', error);
+      }
+      
       const errorMessage: Message = {
         id: crypto.randomUUID(),
         content: "Sorry — I couldn't reach the server. Please try again.",

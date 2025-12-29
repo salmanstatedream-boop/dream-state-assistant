@@ -20,6 +20,15 @@ export interface ConversationMessage {
   created_at: string;
 }
 
+// Sanitize string inputs to prevent issues
+function sanitizeInput(input: string, maxLength: number = 500): string {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+  // Trim whitespace and truncate to max length
+  return input.trim().substring(0, maxLength);
+}
+
 // Create a new conversation
 export async function createConversation(
   userId: string,
@@ -27,13 +36,20 @@ export async function createConversation(
   preview?: string
 ): Promise<Conversation | null> {
   try {
+    const sanitizedTitle = sanitizeInput(title, 500);
+    const sanitizedPreview = sanitizeInput(preview || title.substring(0, 100), 500);
+
+    if (!sanitizedTitle) {
+      throw new Error('Conversation title cannot be empty');
+    }
+
     const { data, error } = await supabase
       .from('conversations')
       .insert([
         {
           user_id: userId,
-          title,
-          preview: preview || title.substring(0, 100),
+          title: sanitizedTitle,
+          preview: sanitizedPreview,
         },
       ])
       .select()
@@ -42,7 +58,9 @@ export async function createConversation(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error creating conversation:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error creating conversation:', error);
+    }
     return null;
   }
 }
@@ -59,7 +77,9 @@ export async function getUserConversations(userId: string): Promise<Conversation
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error('Error fetching conversations:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching conversations:', error);
+    }
     return [];
   }
 }
@@ -90,7 +110,9 @@ export async function getConversationWithMessages(
       messages: messages || [],
     };
   } catch (error) {
-    console.error('Error fetching conversation with messages:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching conversation with messages:', error);
+    }
     return { conversation: null, messages: [] };
   }
 }
@@ -125,7 +147,9 @@ export async function addMessageToConversation(
 
     return data;
   } catch (error) {
-    console.error('Error adding message:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error adding message:', error);
+    }
     return null;
   }
 }
@@ -136,10 +160,12 @@ export async function updateConversationTitle(
   title: string
 ): Promise<Conversation | null> {
   try {
+    const sanitizedTitle = sanitizeInput(title, 500);
+
     const { data, error } = await supabase
       .from('conversations')
       .update({
-        title,
+        title: sanitizedTitle,
         updated_at: new Date().toISOString(),
       })
       .eq('id', conversationId)
@@ -149,7 +175,9 @@ export async function updateConversationTitle(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error updating conversation title:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error updating conversation title:', error);
+    }
     return null;
   }
 }
@@ -173,7 +201,9 @@ export async function updateConversationPreview(
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error updating conversation preview:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error updating conversation preview:', error);
+    }
     return null;
   }
 }
@@ -186,7 +216,9 @@ export async function deleteConversation(conversationId: string): Promise<boolea
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting conversation:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error deleting conversation:', error);
+    }
     return false;
   }
 }
@@ -199,7 +231,9 @@ export async function deleteMessage(messageId: string): Promise<boolean> {
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error('Error deleting message:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error deleting message:', error);
+    }
     return false;
   }
 }
@@ -219,7 +253,9 @@ async function updateConversationTimestamp(conversationId: string): Promise<void
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
   } catch (error) {
-    console.error('Error updating conversation timestamp:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error updating conversation timestamp:', error);
+    }
   }
 }
 
@@ -251,7 +287,9 @@ export async function saveMessagesToConversation(
 
     return data || [];
   } catch (error) {
-    console.error('Error saving messages:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving messages:', error);
+    }
     return [];
   }
 }
